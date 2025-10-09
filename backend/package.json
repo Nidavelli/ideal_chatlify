@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "server-3000": "node src/server.js",
+    "server-3001": "cross-env PORT=3001 node src/server.js",
+    "start:cluster": "concurrently \"npm run server-3000\" \"npm run server-3001\"",
+    "start": "npm run start:cluster"
   },
   "keywords": [],
   "author": "",
@@ -24,9 +27,11 @@
     "jsonwebtoken": "^9.0.2",
     "resend": "^6.1.2",
     "socket.io": "^4.8.1",
+    "socket.io-redis": "^5.2.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.10"
   }
 }
