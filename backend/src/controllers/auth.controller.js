@@ -51,7 +51,7 @@ export const signup = async (req, res) => {
     generateToken(userId, res);
 
     // 5. Respond with success
-    log.success("User registered successfully", "Signup controller");
+    log.success("User registered successfully", "Signup Controller");
 
     res.status(201).json({
       message: "User registered successfully",
@@ -76,5 +76,71 @@ export const signup = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Internal Server Error during signup" });
+  }
+};
+
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    // 1. Validate inputs
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    // 2. Fetch user by email
+    const userResult = await pool.query(
+      "SELECT id, full_name, email, password, profile_pic FROM users WHERE email = $1",
+      [email.toLowerCase()]
+    );
+
+    if (userResult.rowCount === 0) {
+      return res.status(401).json({ message: "Invalid Credentials" });
+    }
+
+    const user = userResult.rows[0];
+
+    // 3. Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid Credentials" });
+    }
+
+    // 4. Generate JWT token and send it as cookie
+    generateToken(user.id, res);
+
+    // 5. Log success
+    log.success(`User logged in successfully: ${email}`, "Login controller");
+
+    // 6. Respond with user info (without password)
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user.id,
+        fullName: user.full_name,
+        email: user.email,
+        profilePic: user.profile_pic,
+      },
+    });
+  } catch (error) {
+    log.error(`Login controller error: ${error}`, "Login Controller");
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error during login" });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    // Clear the token cookie
+    res.clearCookie("jwt", { maxAge: 0 });
+    res.status(200).json({ message: "Logged out successfully" });
+
+    // 2. Logout success
+    log.success(`User logged out successfully:`, "Login controller");
+  } catch (error) {
+    log.error(`Logout error: ${error}`, "Logout Controller");
+    res.status(500).json({ message: "Internal Server Error during logout" });
   }
 };

@@ -3,16 +3,12 @@ import { log } from "../utils/logger.util.js ";
 
 const router = express.Router();
 
-import { signup } from "../controllers/auth.controller.js";
+import { signup, login, logout } from "../controllers/auth.controller.js";
 
 try {
   router.post("/signup", signup);
-  router.get("/login", (req, res) => {
-    res.send("Login endpoint");
-  });
-  router.get("/logout", (req, res) => {
-    res.send("Logout endpoint");
-  });
+  router.post("/login", login);
+  router.post("/logout", logout);
 
   log.success("Auth routes set up successfully", "auth.route.js");
 } catch (error) {
