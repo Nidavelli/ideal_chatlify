@@ -1,9 +1,11 @@
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+import "dotenv/config";
 
 import { log } from "../utils/logger.util.js";
 import { pool } from "../../database/database.js"; // remove 'sql'
 import { generateToken } from "../utils/jwt.util.js";
+import { sendWelcomeEmail } from "../emails/emailHandler.js";
 
 export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -51,8 +53,7 @@ export const signup = async (req, res) => {
     // 5. Respond with success
     log.success("User registered successfully", "Signup controller");
 
-    //todo: Send a
-    return res.status(201).json({
+    res.status(201).json({
       message: "User registered successfully",
       user: {
         id: userId,
@@ -61,6 +62,15 @@ export const signup = async (req, res) => {
         profilePic: "",
       },
     });
+
+    //todo: Send an email after success
+
+    try {
+      const clientURL = process.env.CLIENT_URL || "https://your-client-url.com";
+      await sendWelcomeEmail(email.toLowerCase(), fullName, clientURL);
+    } catch (error) {
+      log.error("Error sending welcome email", error?.message || error);
+    }
   } catch (error) {
     log.error(`Signup controller error: ${error}`, "Signup Function");
     return res

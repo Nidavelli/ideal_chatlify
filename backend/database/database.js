@@ -46,6 +46,7 @@ export const initDB = async () => {
       "database.js"
     );
   } catch (error) {
-    log.error("Failed to initialize the database", error);
+    log.error("Failed to initialize the database", error?.message || error);
+    console.error(error);
   }
 };
