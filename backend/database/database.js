@@ -36,8 +36,12 @@ export const initDB = async () => {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         sender_id VARCHAR(255) NOT NULL,
         receiver_id VARCHAR(255) NOT NULL,
-        content TEXT NOT NULL,
-        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        text TEXT CHECK (char_length(text) <= 2000),
+        image TEXT,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
       );
     `);
 
