@@ -3,9 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import "dotenv/config";
 
 import { log } from "../utils/logger.util.js";
-import { pool } from "../../database/database.js"; // remove 'sql'
+import { pool } from "../../database/database.js";
 import { generateToken } from "../utils/jwt.util.js";
 import { sendWelcomeEmail } from "../emails/emailHandler.js";
+import cloudinary from "../utils/cloudinary.util.js";
 
 export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -142,5 +143,66 @@ export const logout = async (req, res) => {
   } catch (error) {
     log.error(`Logout error: ${error}`, "Logout Controller");
     res.status(500).json({ message: "Internal Server Error during logout" });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+
+    if (!profilePic) {
+      return res.status(400).json({ message: "Profile picture is required" });
+    }
+
+    const userId = req.user.id;
+
+    // Upload image to Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+      transformation: [
+        {
+          width: 400, // Set desired width
+          height: 400, // Set desired height
+          crop: "fill", // Crop to fill the box
+          gravity: "auto", // Automatically focus on the most important part (e.g. face)
+        },
+        {
+          fetch_format: "auto", // Automatically optimize format (e.g. webp)
+          quality: "auto", // Automatically optimize quality
+        },
+      ],
+    });
+
+    if (!uploadResponse.secure_url) {
+      log.error(
+        "Failed to upload image to Cloudinary",
+        "Update Profile Controller"
+      );
+      return res
+        .status(500)
+        .json({ message: "Failed to upload image to Cloudinary" });
+    }
+
+    const newProfilePicUrl = uploadResponse.secure_url;
+
+    // Update user in DB
+    await pool.query(
+      `
+      UPDATE users 
+      SET profile_pic = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $2
+      `,
+      [newProfilePicUrl, userId]
+    );
+    log.success("upload image to Cloudinary", "Update Profile Controller");
+
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      profilePic: newProfilePicUrl,
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({
+      message: "Internal server error while updating profile picture",
+    });
   }
 };
