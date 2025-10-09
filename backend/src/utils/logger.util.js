@@ -1,19 +1,29 @@
-// logger.util.js
+// utils/logger.js
 import chalk from "chalk";
 
-const log = {
-  success: (msg) => {
-    console.log(`${chalk.green.bold("[SUCCESS✅]")} ${chalk.green(msg)}`);
+export const log = {
+  success: (msg, tag = "") => {
+    console.log(
+      `${chalk.green("✅ SUCCESS")} ${formatTag(tag)} ${chalk.green(msg)}`
+    );
   },
-  error: (msg) => {
-    console.error(`${chalk.red.bold("[ERROR❌]")} ${chalk.red(msg)}`);
+  error: (msg, tag = "") => {
+    console.error(
+      `${chalk.red("❌ ERROR")} ${formatTag(tag)} ${chalk.red(msg)}`
+    );
   },
-  info: (msg) => {
-    console.log(`${chalk.blue.bold("[INFOℹ️]")} ${chalk.blue(msg)}`);
+  warn: (msg, tag = "") => {
+    console.warn(
+      `${chalk.yellow("⚠️ WARNING")} ${formatTag(tag)} ${chalk.yellow(msg)}`
+    );
   },
-  warn: (msg) => {
-    console.warn(`${chalk.yellow.bold("[WARN⚠️]")} ${chalk.yellow(msg)}`);
+  info: (msg, tag = "") => {
+    console.log(
+      `${chalk.blue("ℹ️ INFO")} ${formatTag(tag)} ${chalk.blue(msg)}`
+    );
   },
 };
 
-export default log;
+function formatTag(tag) {
+  return tag ? chalk.magenta(`[${tag}]\t`) : "";
+}
