@@ -5,14 +5,17 @@
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { spawnSync } from 'child_process';
 
 // derive script directory (works with ESM import.meta.url)
-const SCRIPT_DIR = path.dirname(decodeURIComponent(new URL(import.meta.url).pathname));
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 // project root is one level up from scripts dir
 const PROJECT_ROOT = path.resolve(SCRIPT_DIR, '..');
 
 const ACTION = process.argv[2] || 'status';
-const PID_FILE = path.resolve(process.cwd(), '.server_pids.json');
+// keep PID file inside the project so running the manager from other CWDs works
+const PID_FILE = path.resolve(PROJECT_ROOT, '.server_pids.json');
 
 const SERVERS = [3010,3011,3012];
 
@@ -47,12 +50,18 @@ if (ACTION === 'start') {
 } else if (ACTION === 'stop') {
   const pids = loadPids();
   Object.keys(pids).forEach(port => {
+    const pid = pids[port];
     try {
-      process.kill(pids[port], 'SIGTERM');
-      console.log(`stopped server ${port} pid=${pids[port]}`);
+      if (process.platform === 'win32') {
+        // use taskkill to ensure child and sub-processes are terminated
+        try { spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' }); } catch (e) {}
+      } else {
+        process.kill(pid, 'SIGTERM');
+      }
+      console.log(`stopped server ${port} pid=${pid}`);
       delete pids[port];
     } catch (e) {
-      console.warn(`could not stop ${port}:`, e.message);
+      console.warn(`could not stop ${port}:`, e && e.message);
     }
   });
   savePids(pids);

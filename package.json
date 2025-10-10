@@ -1,0 +1,13 @@
+{
+  "name": "ideal_chatlify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "servers:start": "node ./scripts/manage_servers.js start",
+    "servers:stop": "node ./scripts/manage_servers.js stop",
+    "servers:restart": "node ./scripts/manage_servers.js restart",
+    "servers:status": "node ./scripts/manage_servers.js status",
+    "servers:check": "node ./scripts/check_restart.js"
+  }
+}

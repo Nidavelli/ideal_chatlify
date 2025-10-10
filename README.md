@@ -32,6 +32,8 @@ npm -v
 
 - A POSIX-compatible shell (bash/zsh) for the management scripts.
 
+**Windows users:** the project works on Windows (WSL or native) but the bundled `scripts/check_restart.sh` is a bash script. A cross-platform Node replacement (`scripts/check_restart.js`) is provided and should be used on Windows or where bash is unavailable.
+
 ---
 
 ## Install dependencies
@@ -73,7 +75,7 @@ cd frontend
 npm run dev
 ```
 
-The frontend will open on a Vite dev server (usually http://localhost:5173). The client chooses a backend node at random from the default list and connects.
+The frontend will open on a Vite dev server (usually <http://localhost:5173>). The client chooses a backend node at random from the default list and connects.
 
 To stop the backend nodes:
 
@@ -85,6 +87,27 @@ To restart:
 
 ```bash
 node ./scripts/manage_servers.js restart
+
+### Windows (PowerShell or cmd) notes
+
+You can run the same Node manager script on Windows (PowerShell/cmd) as long as Node is installed and on PATH. From a PowerShell prompt (run as the project root):
+
+```powershell
+# start
+node .\scripts\manage_servers.js start
+
+# stop
+node .\scripts\manage_servers.js stop
+
+# restart
+node .\scripts\manage_servers.js restart
+```
+
+To run the cross-platform health check script (Node):
+
+```powershell
+node .\scripts\check_restart.js
+```
 ```
 
 ---
@@ -112,8 +135,9 @@ Open the frontend and configure it to connect to the matching server (the defaul
 4. If the server you are connected to fails, the client will attempt to reconnect. It also randomly selects a node on page load for initial connection.
 
 Notes:
-- Messages are persisted on each node locally. Messages you see are the union of ones relayed by the node you connected to.
-- To test failover: start multiple browser clients, kill one backend node using the manager script, and observe clients reconnecting to other nodes.
+
+1. Messages are persisted on each node locally. Messages you see are the union of ones relayed by the node you connected to.
+2. To test failover: start multiple browser clients, stop one backend node using the manager script, and observe clients reconnecting to other nodes.
 
 ---
 
@@ -144,28 +168,28 @@ This design keeps backend nodes loosely-coupled and avoids a single point of fai
 
 1. Distributed message consistency and duplication
 
-- Problem: With multiple independent nodes, relaying messages between peers can cause duplicates or out-of-order messages.
-- Solution: Add a unique `id` to each message envelope (timestamp + random suffix). Peers deduplicate incoming messages by id before persisting or re-broadcasting. Messages also carry a `receivedAt` timestamp for best-effort ordering. For a full production system, a central store or vector clocks would be needed; here deduplication and timestamps are sufficient for the assignment.
+  - Problem: With multiple independent nodes, relaying messages between peers can cause duplicates or out-of-order messages.
+  - Solution: Add a unique `id` to each message envelope (timestamp + random suffix). Peers deduplicate incoming messages by id before persisting or re-broadcasting. Messages also carry a `receivedAt` timestamp for best-effort ordering. For a full production system, a central store or vector clocks would be needed; here deduplication and timestamps are sufficient for the assignment.
 
 2. Client failover and reconnection behavior
 
-- Problem: Clients should be able to connect to any node and recover if the node disappears.
-- Solution: The client randomly selects a node on page load and uses Socket.IO's reconnection features. After reconnect, the client re-emits `set_username` so the server has the display name. The client also fetches `/internal/users` as a REST fallback in case realtime events are delayed.
+  - Problem: Clients should be able to connect to any node and recover if the node disappears.
+  - Solution: The client randomly selects a node on page load and uses Socket.IO's reconnection features. After reconnect, the client re-emits `set_username` so the server has the display name. The client also fetches `/internal/users` as a REST fallback in case realtime events are delayed.
 
 3. Process management and environment differences
 
-- Problem: Starting multiple node processes reliably across environments (spaces in paths, nvm-managed node binaries) caused spawn / ENOENT issues when using a literal `node` in the manager script.
-- Solution: Use `process.execPath` (the absolute Node path used to run the manager script) when spawning child processes. Also resolve child script paths relative to the script file (using `import.meta.url`) and decode URL-encoded paths to avoid broken paths when the workspace path contains spaces.
+  - Problem: Starting multiple node processes reliably across environments (spaces in paths, nvm-managed node binaries) caused spawn / ENOENT issues when using a literal `node` in the manager script.
+  - Solution: Use `process.execPath` (the absolute Node path used to run the manager script) when spawning child processes. Also resolve child script paths relative to the script file (using `import.meta.url`) and decode URL-encoded paths to avoid broken paths when the workspace path contains spaces.
 
 4. Persistence, durability and performance
 
-- Problem: File-based persistence is simple but can be I/O bound and inconsistent across nodes.
-- Solution: Keep logs append-only in memory and flush to disk periodically on change. Implement a capped list to prevent unbounded memory growth (e.g., keep the latest 1000 messages). For better performance and reliability, a persistent datastore (Redis, SQLite, or a centralized DB) is recommended for future improvements.
+  - Problem: File-based persistence is simple but can be I/O bound and inconsistent across nodes.
+  - Solution: Keep logs append-only in memory and flush to disk periodically on change. Implement a capped list to prevent unbounded memory growth (e.g., keep the latest 1000 messages). For better performance and reliability, a persistent datastore (Redis, SQLite, or a centralized DB) is recommended for future improvements.
 
 5. User identity propagation
 
-- Problem: Some clients were initially showing as "Anonymous" because the client did not always emit `set_username` before sending messages or due to reconnection timing.
-- Solution: Server accepts an explicit `set_username` event and as a fallback sets username from the first message `from` field when present; it then broadcasts an updated users list. The client is updated to call `set_username` on join and after reconnect.
+  - Problem: Some clients were initially showing as "Anonymous" because the client did not always emit `set_username` before sending messages or due to reconnection timing.
+  - Solution: Server accepts an explicit `set_username` event and as a fallback sets username from the first message `from` field when present; it then broadcasts an updated users list. The client is updated to call `set_username` on join and after reconnect.
 
 ### Performance evaluation (informal)
 
