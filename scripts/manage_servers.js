@@ -6,6 +6,11 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
+// derive script directory (works with ESM import.meta.url)
+const SCRIPT_DIR = path.dirname(decodeURIComponent(new URL(import.meta.url).pathname));
+// project root is one level up from scripts dir
+const PROJECT_ROOT = path.resolve(SCRIPT_DIR, '..');
+
 const ACTION = process.argv[2] || 'status';
 const PID_FILE = path.resolve(process.cwd(), '.server_pids.json');
 
@@ -27,10 +32,16 @@ if (ACTION === 'start') {
       return;
     }
     const env = Object.assign({}, process.env, { PORT: String(port), PEERS: SERVERS.filter(p=>p!==port).map(p=>`http://localhost:${p}`).join(',') });
-    const child = spawn('node', ['src/server.js'], { cwd: path.resolve(process.cwd(), 'backend'), env, stdio: ['ignore','inherit','inherit'], detached: true });
-    console.log(`started server ${port} pid=${child.pid}`);
-    pids[port] = child.pid;
-    child.unref();
+    const nodeExe = process.execPath || 'node';
+  const serverScript = path.resolve(PROJECT_ROOT, 'backend', 'src', 'server.js');
+    try {
+      // spawn without detached/unref and use absolute script path to avoid path/space issues
+      const child = spawn(nodeExe, [serverScript], { env, stdio: ['ignore','inherit','inherit'] });
+      console.log(`started server ${port} pid=${child.pid}`);
+      pids[port] = child.pid;
+    } catch (err) {
+      console.warn(`failed to start server ${port}:`, err && err.message);
+    }
   });
   savePids(pids);
 } else if (ACTION === 'stop') {
@@ -57,10 +68,15 @@ if (ACTION === 'start') {
   const newPids = {};
   SERVERS.forEach(port => {
     const env = Object.assign({}, process.env, { PORT: String(port), PEERS: SERVERS.filter(p=>p!==port).map(p=>`http://localhost:${p}`).join(',') });
-    const child = spawn('node', ['src/server.js'], { cwd: path.resolve(process.cwd(), 'backend'), env, stdio: ['ignore','inherit','inherit'], detached: true });
-    console.log(`started server ${port} pid=${child.pid}`);
-    newPids[port] = child.pid;
-    child.unref();
+    const nodeExe = process.execPath || 'node';
+  const serverScript = path.resolve(PROJECT_ROOT, 'backend', 'src', 'server.js');
+    try {
+      const child = spawn(nodeExe, [serverScript], { env, stdio: ['ignore','inherit','inherit'] });
+      console.log(`started server ${port} pid=${child.pid}`);
+      newPids[port] = child.pid;
+    } catch (err) {
+      console.warn(`failed to start server ${port}:`, err && err.message);
+    }
   });
   savePids(newPids);
 } else if (ACTION === 'status') {
