@@ -1,3 +1,11 @@
+# NAMES AND ADM
+
+1 PHINEAS NDUNGU PA106/G/17490/22
+2 Bonface mamboleo ondieki  PA106/G/15339/21
+3 Polycarp Sally PA106/G/17443/22
+4 mark njogu PA106/G/17469/22
+5 CALEB
+
 # Project Presentation — ideal_chatlify
 
 Use this document as a step-by-step guide for presenting the project. Each section works like a slide: read the header, then expand on the bullet points.

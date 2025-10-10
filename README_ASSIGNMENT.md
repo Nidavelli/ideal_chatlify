@@ -1,6 +1,12 @@
 # Distributed Chat Assignment - Run & Test
 
-This repository has been extended to implement a simple distributed chat demo (3 server nodes + React client).
+## NAMES AND ADM
+
+1 PHINEAS NDUNGU PA106/G/17490/22
+2 Bonface mamboleo ondieki  PA106/G/15339/21
+3 Polycarp Sally PA106/G/17443/22
+4 mark njogu PA106/G/17469/22
+5 CALEB
 
 Quick start (from repo root):
 
@@ -40,7 +46,7 @@ npm run dev
 ```
 
 4; Open the frontend (Vite will print the URL, default <http://localhost:5173>). The client will randomly pick one of the three servers to connect to. Open multiple browser windows to simulate multiple clients.
-4; Open the frontend (Vite will print the URL, default http://localhost:5173). The client will randomly pick one of the three servers (ports 3010, 3011, 3012) to connect to. Open multiple browser windows to simulate multiple clients.
+4; Open the frontend (Vite will print the URL, default <http://localhost:5173>). The client will randomly pick one of the three servers (ports 3010, 3011, 3012) to connect to. Open multiple browser windows to simulate multiple clients.
 
 Demonstrations to run for the assignment:
 
@@ -60,5 +66,3 @@ Checking logs and errors:
 - Backend terminal outputs connection logs and relay errors.
 - Frontend dev server outputs runtime errors in the terminal and browser console.
 - You can view `backend_message_log.json` to inspect persisted messages.
-
-If you want me to run automated tests or further enhance gossiping, private messages, or authentication, tell me which feature to add next.

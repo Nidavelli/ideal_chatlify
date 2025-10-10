@@ -13,12 +13,6 @@ KIRINYAGA STUDENTS CHAT CENTER — a lightweight distributed chat prototype buil
 
 ---
 
-## What changed from upstream
-
-This project was adapted and extended for a distributed chat assignment. Any direct external references were removed. YouTube links and upstream references have been intentionally left out of this README.
-
----
-
 ## Setup — prerequisites
 
 - Node.js (>= 18 recommended). Verify with:
@@ -108,7 +102,6 @@ To run the cross-platform health check script (Node):
 ```powershell
 node .\scripts\check_restart.js
 ```
-```
 
 ---
 
@@ -151,7 +144,7 @@ Notes:
 
 ---
 
-## Architecture, challenges, and solutions (2–3 page summary)
+## Architecture, challenges, and solutions
 
 ### Architecture summary
 
@@ -168,28 +161,28 @@ This design keeps backend nodes loosely-coupled and avoids a single point of fai
 
 1. Distributed message consistency and duplication
 
-  - Problem: With multiple independent nodes, relaying messages between peers can cause duplicates or out-of-order messages.
-  - Solution: Add a unique `id` to each message envelope (timestamp + random suffix). Peers deduplicate incoming messages by id before persisting or re-broadcasting. Messages also carry a `receivedAt` timestamp for best-effort ordering. For a full production system, a central store or vector clocks would be needed; here deduplication and timestamps are sufficient for the assignment.
+- Problem: With multiple independent nodes, relaying messages between peers can cause duplicates or out-of-order messages.
+- Solution: Add a unique `id` to each message envelope (timestamp + random suffix). Peers deduplicate incoming messages by id before persisting or re-broadcasting. Messages also carry a `receivedAt` timestamp for best-effort ordering. For a full production system, a central store or vector clocks would be needed; here deduplication and timestamps are sufficient for the assignment.
 
-2. Client failover and reconnection behavior
+1. Client failover and reconnection behavior
 
-  - Problem: Clients should be able to connect to any node and recover if the node disappears.
-  - Solution: The client randomly selects a node on page load and uses Socket.IO's reconnection features. After reconnect, the client re-emits `set_username` so the server has the display name. The client also fetches `/internal/users` as a REST fallback in case realtime events are delayed.
+- Problem: Clients should be able to connect to any node and recover if the node disappears.
+- Solution: The client randomly selects a node on page load and uses Socket.IO's reconnection features. After reconnect, the client re-emits `set_username` so the server has the display name. The client also fetches `/internal/users` as a REST fallback in case realtime events are delayed.
 
-3. Process management and environment differences
+1. Process management and environment differences
 
-  - Problem: Starting multiple node processes reliably across environments (spaces in paths, nvm-managed node binaries) caused spawn / ENOENT issues when using a literal `node` in the manager script.
-  - Solution: Use `process.execPath` (the absolute Node path used to run the manager script) when spawning child processes. Also resolve child script paths relative to the script file (using `import.meta.url`) and decode URL-encoded paths to avoid broken paths when the workspace path contains spaces.
+- Problem: Starting multiple node processes reliably across environments (spaces in paths, nvm-managed node binaries) caused spawn / ENOENT issues when using a literal `node` in the manager script.
+- Solution: Use `process.execPath` (the absolute Node path used to run the manager script) when spawning child processes. Also resolve child script paths relative to the script file (using `import.meta.url`) and decode URL-encoded paths to avoid broken paths when the workspace path contains spaces.
 
-4. Persistence, durability and performance
+1. Persistence, durability and performance
 
-  - Problem: File-based persistence is simple but can be I/O bound and inconsistent across nodes.
-  - Solution: Keep logs append-only in memory and flush to disk periodically on change. Implement a capped list to prevent unbounded memory growth (e.g., keep the latest 1000 messages). For better performance and reliability, a persistent datastore (Redis, SQLite, or a centralized DB) is recommended for future improvements.
+- Problem: File-based persistence is simple but can be I/O bound and inconsistent across nodes.
+- Solution: Keep logs append-only in memory and flush to disk periodically on change. Implement a capped list to prevent unbounded memory growth (e.g., keep the latest 1000 messages). For better performance and reliability, a persistent datastore (Redis, SQLite, or a centralized DB) is recommended for future improvements.
 
-5. User identity propagation
+1. User identity propagation
 
-  - Problem: Some clients were initially showing as "Anonymous" because the client did not always emit `set_username` before sending messages or due to reconnection timing.
-  - Solution: Server accepts an explicit `set_username` event and as a fallback sets username from the first message `from` field when present; it then broadcasts an updated users list. The client is updated to call `set_username` on join and after reconnect.
+- Problem: Some clients were initially showing as "Anonymous" because the client did not always emit `set_username` before sending messages or due to reconnection timing.
+- Solution: Server accepts an explicit `set_username` event and as a fallback sets username from the first message `from` field when present; it then broadcasts an updated users list. The client is updated to call `set_username` on join and after reconnect.
 
 ### Performance evaluation (informal)
 
@@ -232,13 +225,13 @@ This design keeps backend nodes loosely-coupled and avoids a single point of fai
 
 ## Team members
 
-Please add up to 5 member names here (replace placeholders):
+## NAMES AND ADM
 
-1. mark
-2. phineas
-3. sally
-4. bonne
-5. caleb
+1 PHINEAS NDUNGU PA106/G/17490/22
+2 Bonface mamboleo ondieki  PA106/G/15339/21
+3 Polycarp Sally PA106/G/17443/22
+4 mark njogu PA106/G/17469/22
+5 CALEB
 
 ---
 
@@ -247,7 +240,3 @@ Please add up to 5 member names here (replace placeholders):
 - To harden this prototype for production, focus on persistent storage, a proper message broker for inter-node communication, authentication, and operational tooling (logging/metrics/alerts).
 
 ---
-
-## License
-
-This project is provided as-is for educational purposes. Add a license file if you plan to publish.

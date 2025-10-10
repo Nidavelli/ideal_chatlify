@@ -41,6 +41,9 @@ function persistLog() {
   }
 }
 
+// track remote users announced by peers: { '<origin>:<id>': { id, username, origin } }
+const remoteUsers = {};
+
 // Peers are provided via env var PEERS as comma-separated URLs (e.g. http://localhost:3001)
 const PEER_LIST = (process.env.PEERS || '').split(',').map(s => s.trim()).filter(Boolean);
 
@@ -90,14 +93,34 @@ io.on('connection', (socket) => {
     socket.data.username = name;
     // broadcast updated users list
     io.emit('users', getConnectedUsers());
+    // announce this user's presence to peers
+    const thisUrl = `http://localhost:${process.env.PORT || 3000}`;
+    announceToPeers({ id: socket.id, username: name, origin: thisUrl }).catch(()=>{});
   });
 
   // broadcast users list on connect/disconnect
   socket.on('disconnect', () => {
     console.log('client disconnected', socket.id, socket.data.username);
     io.emit('users', getConnectedUsers());
+    // announce removal to peers
+    const thisUrl = `http://localhost:${process.env.PORT || 3000}`;
+    announceToPeers({ id: socket.id, origin: thisUrl, remove: true }).catch(()=>{});
   });
 });
+
+// announce presence to peers when a local user sets username or disconnects
+async function announceToPeers(payload) {
+  for (const peer of PEER_LIST) {
+    // avoid posting to self
+    const thisUrl = `http://localhost:${process.env.PORT || 3000}`;
+    if (peer === thisUrl) continue;
+    try {
+      await axios.post(`${peer}/internal/peer_user`, payload);
+    } catch (err) {
+      console.warn('announce to', peer, 'failed:', err.message);
+    }
+  }
+}
 
 // internal relay endpoint to accept peer messages
 app.post('/internal/relay', (req, res) => {
@@ -114,6 +137,21 @@ app.post('/internal/relay', (req, res) => {
   return res.send({ ok: true });
 });
 
+// peer presence announcements
+app.post('/internal/peer_user', (req, res) => {
+  const { id, username, origin, remove } = req.body || {};
+  if (!id || !origin) return res.status(400).send({ error: 'invalid' });
+  const key = `${origin}:${id}`;
+  if (remove) {
+    delete remoteUsers[key];
+  } else {
+    remoteUsers[key] = { id: key, username: username || 'Anonymous', origin };
+  }
+  // emit combined users to local clients
+  io.emit('users', getConnectedUsers());
+  return res.send({ ok: true });
+});
+
 // health endpoint
 app.get('/internal/health', (req, res) => {
   res.json({ ok: true, port: process.env.PORT || PORT, peers: PEER_LIST });
@@ -122,12 +160,40 @@ app.get('/internal/health', (req, res) => {
 // return connected users
 function getConnectedUsers() {
   const sockets = Array.from(io.sockets.sockets.values());
-  return sockets.map(s => ({ id: s.id, username: s.data.username || 'Anonymous' }));
+  const local = sockets.map(s => ({ id: s.id, username: s.data.username || 'Anonymous' }));
+  // combine with remoteUsers, avoiding id collisions: prefer local ids
+  const remote = Object.values(remoteUsers).map(r => ({ id: r.id, username: r.username || 'Anonymous' }));
+  // if a remote id matches a local id (unlikely due to origin prefix), prefer local
+  const localIds = new Set(local.map(u => u.id));
+  const merged = local.concat(remote.filter(u => !localIds.has(u.id)));
+  return merged;
 }
 
 app.get('/internal/users', (req, res) => {
   res.json(getConnectedUsers());
 });
+
+// on startup, sync current users from peers to populate remoteUsers
+async function syncUsersFromPeers() {
+  for (const peer of PEER_LIST) {
+    try {
+      const r = await axios.get(`${peer}/internal/users`, { timeout: 2000 });
+      const users = r.data || [];
+      for (const u of users) {
+        // create a composite id using peer origin
+        const key = `${peer}:${u.id}`;
+        remoteUsers[key] = { id: key, username: u.username || 'Anonymous', origin: peer };
+      }
+    } catch (e) {
+      // ignore unreachable peers on startup
+    }
+  }
+  // emit initial combined users
+  io.emit('users', getConnectedUsers());
+}
+
+// run initial sync asynchronously
+syncUsersFromPeers().catch(()=>{});
 
 // Simple status dashboard at root
 app.get('/', (req, res) => {

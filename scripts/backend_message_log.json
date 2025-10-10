@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1760111596879-o4xgiu",
+    "receivedAt": "2025-10-10T15:53:16.879Z",
+    "from": "user1",
+    "text": "goodmorning from user1"
+  },
+  {
+    "id": "1760111633997-80lk24",
+    "receivedAt": "2025-10-10T15:53:53.997Z",
+    "from": "user2",
+    "text": "message from user2"
+  },
+  {
+    "id": "1760111669734-d0omlh",
+    "receivedAt": "2025-10-10T15:54:29.734Z",
+    "from": "user4",
+    "text": "message from user4"
+  },
+  {
+    "id": "1760111716085-2ovse7",
+    "receivedAt": "2025-10-10T15:55:16.085Z",
+    "from": "user5",
+    "text": "hello"
+  },
+  {
+    "id": "1760111719437-fxaamx",
+    "receivedAt": "2025-10-10T15:55:19.437Z",
+    "from": "user5",
+    "text": "hdjs"
+  },
+  {
+    "id": "1760113356472-wo9cha",
+    "receivedAt": "2025-10-10T16:22:36.480Z",
+    "from": "user1",
+    "text": "hello"
+  }
+]

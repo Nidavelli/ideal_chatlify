@@ -1,13 +1,18 @@
 # Project Presentation — ideal_chatlify
 
-Use this document as a step-by-step guide for presenting the project. Each section works like a slide: read the header, then expand on the bullet points.
+## NAMES AND ADM
+
+1 PHINEAS NDUNGU PA106/G/17490/22
+2 Bonface mamboleo ondieki  PA106/G/15339/21
+3 Polycarp Sally PA106/G/17443/22
+4 mark njogu PA106/G/17469/22
+5 CALEB
 
 ---
 
 ## Slide 1 — Title
 
 - ideal_chatlify — KIRINYAGA STUDENTS CHAT CENTER
-- Team: (add member names in README)
 - Tech: Node.js, Socket.IO, React, Vite
 
 ---
@@ -80,9 +85,3 @@ Use this document as a step-by-step guide for presenting the project. Each secti
 ## Slide 10 — Questions
 
 - Invite feedback and questions from the audience.
-
----
-
-
-Notes:
-- If you want a slide deck (PPTX), I can convert this markdown into slides using Pandoc or reveal.js and export to PDF or PPTX if you want.
