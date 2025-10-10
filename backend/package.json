@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "start:3010": "PORT=3010 PEERS=http://localhost:3011,http://localhost:3012 node src/server.js",
+    "start:3011": "PORT=3011 PEERS=http://localhost:3010,http://localhost:3012 node src/server.js",
+    "start:3012": "PORT=3012 PEERS=http://localhost:3010,http://localhost:3011 node src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +20,9 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
+  "axios": "^1.4.0",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
