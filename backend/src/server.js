@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import cors from "cors";
 
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
@@ -27,10 +28,11 @@ const __dirname = path.resolve();
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 
 // API routes for authentication and messages
 app.use("/api/auth", authRoutes);
-app.use("/api/message", messageRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Serve frontend files if in production mode
 if (process.env.NODE_ENV === "production") {

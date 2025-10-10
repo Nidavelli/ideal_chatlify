@@ -19,6 +19,9 @@ export const pool = new Pool({ connectionString });
 // ✅ Optional: Initialize the messages table
 export const initDB = async () => {
   try {
+    // await pool.query(`DROP TABLE IF EXISTS messages;`);
+    // await pool.query(`DROP TABLE IF EXISTS users;`); // Optional: if you want a clean reset
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -34,8 +37,8 @@ export const initDB = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        sender_id VARCHAR(255) NOT NULL,
-        receiver_id VARCHAR(255) NOT NULL,
+        sender_id UUID NOT NULL,
+        receiver_id UUID NOT NULL,
         text TEXT CHECK (char_length(text) <= 2000),
         image TEXT,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
