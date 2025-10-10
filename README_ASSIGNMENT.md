@@ -7,6 +7,8 @@
 3 Polycarp Sally PA106/G/17443/22
 4 mark njogu PA106/G/17469/22
 5 Eric mue.  Pa106/g/17479/22
+6 Bridgette Ngahu PA106/G/17580/22
+7 BRADIL MUKHWANA – PA106/G/17716/22
 
 Quick start (from repo root):
 

@@ -4,6 +4,19 @@ KIRINYAGA STUDENTS CHAT CENTER — a lightweight distributed chat prototype buil
 
 ---
 
+## Team members
+
+## NAMES AND ADM
+
+1 PHINEAS NDUNGU PA106/G/17490/22
+2 Bonface mamboleo ondieki  PA106/G/15339/21
+3 Polycarp Sally PA106/G/17443/22
+4 mark njogu PA106/G/17469/22
+5 Eric mue.  Pa106/g/17479/22
+6 Bridgette Ngahu PA106/G/17580/22
+7 BRADIL MUKHWANA – PA106/G/17716/22
+
+
 ## Quick overview
 
 - Backend: Express + Socket.IO servers (three nodes, default ports 3010, 3011, 3012). Each node accepts client socket connections, persists messages locally, and relays messages to configured peers.
@@ -222,21 +235,4 @@ This design keeps backend nodes loosely-coupled and avoids a single point of fai
 - Health checks: Each node exposes `/internal/health` and `/internal/users` for manual inspection.
 
 ---
-
-## Team members
-
-## NAMES AND ADM
-
-1 PHINEAS NDUNGU PA106/G/17490/22
-2 Bonface mamboleo ondieki  PA106/G/15339/21
-3 Polycarp Sally PA106/G/17443/22
-4 mark njogu PA106/G/17469/22
-5 Eric mue.  Pa106/g/17479/22
-
----
-
-## Where to look next
-
-- To harden this prototype for production, focus on persistent storage, a proper message broker for inter-node communication, authentication, and operational tooling (logging/metrics/alerts).
-
 ---
